@@ -11,22 +11,24 @@ function createConnection(option?: ConnectionConfig): Promise<mariadb.Connection
   });
 }
 
-export async function query(
+export async function query<T>(
   q: string,
-  values: (string | number)[] | string | number = []
-) {
+  id: string | number
+): Promise<queryResult<T>> {
   const connection = await createConnection();
   try {
-    const rows = await connection.query({ sql: 'SELECT 1 as one' });
-    if (rows[0].one !== 1){
-      throw Error('one !== 1');
-    }
-    return rows;
+    const rows = (await connection.query( q, id )) as T[];
+    return { success: true, message: undefined, data: rows };
   } catch (err) {
-    // Received expected error
-    throw Error((err as Error).message);
+    return { success: false, message: (err as Error).message };
   }
   finally {
     await connection.end();
   }
+}
+
+export interface queryResult<T> {
+  success: boolean;
+  message: string | undefined;
+  data?: T[];
 }

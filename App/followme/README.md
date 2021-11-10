@@ -8,10 +8,35 @@
 
 ### To work with SQL:  
 
+command line ubuntu:  
+
+sudo apt-get update  
+sudo apt-get install -y mariadb-server mariadb-client  
+
+sudo mysql_secure_installation  
+> set root password to 'x7vlgBtWF+'  
+
+After run server and setup root sec,  
+Create user and DB:  
+
+sudo mysql -u root
+
+```sql  
+CREATE USER 'fadmin'@'%' IDENTIFIED BY '8FxLWcquHb';  
+GRANT ALL PRIVILEGES ON *.* TO 'fadmin'@'%' WITH GRANT OPTION;  
+FLUSH PRIVILEGES;  
+CREATE DATABASE store;  
+```
+
 Create .env.local file for MySQL Database credentials
 
-MYSQL_HOST=  
-MYSQL_DATABASE=  
-MYSQL_USERNAME=  
-MYSQL_PASSWORD=  
-MYSQL_PORT=  
+```typescript  
+STORAGE=MYSQL
+MYSQL_HOST=localhost  
+MYSQL_DATABASE=store  
+MYSQL_USERNAME=fadmin  
+MYSQL_PASSWORD=8FxLWcquHb  
+MYSQL_PORT=3306  
+```  
+ 
+if STORAGE!=MYSQL, mysql is not used 
