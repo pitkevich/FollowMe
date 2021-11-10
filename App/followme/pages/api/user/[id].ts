@@ -1,4 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import {query} from "../../../lib/db";
+
 
 type Data = {
     token: string,
@@ -6,7 +8,7 @@ type Data = {
     picKey?: number
 }
 
-export default function handler(
+export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Data>
 ) {
@@ -18,6 +20,12 @@ export default function handler(
     switch (method) {
         case 'GET':
             // Get data from your database
+            // const results = await query(
+            //     `SELECT ... FROM ... WHERE id = ?`,
+            //     id
+            // );
+            // return res.json(results[0])
+            //
             if (id === '1') {
                 res.status(200).json({ token: '1', name: 'John Doe' })
             }
