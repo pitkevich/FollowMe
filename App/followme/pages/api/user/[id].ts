@@ -5,7 +5,8 @@ import {query} from "../../../lib/db";
 type Data = {
     token: string,
     name: string,
-    picKey?: number
+    picKey?: number,
+    data?: undefined
 }
 
 export default async function handler(
@@ -21,21 +22,16 @@ export default async function handler(
         case 'GET':
             // Get data from your database
             if (process.env.STORAGE === 'MYSQL') {
-                const results = await query<any>(
-                    `SELECT 'someone' as one`,
+                const results = await query<Data>(
+                    `SELECT '1' as token, 'someone' as name`,
                     id
                 );
                 if (!results.success) {
                     res.status(500).end(results.message ?? 'unknown error');
+                } else if (results.data.length === 0) {
+                    res.status(404).end(`\'${id}\' Not Found`)
                 } else {
-                    return res.json(
-                        {
-                            token: '1',
-                            name: results.data.map(i => {
-                                const y: { one: string } = i;
-                                return y.one;
-                            }).join(',')
-                        });
+                    res.json(results.data[0]);
                 }
             } else {
                 if (id === '1') {

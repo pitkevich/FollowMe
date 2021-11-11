@@ -40,3 +40,18 @@ MYSQL_PORT=3306
 ```  
  
 if STORAGE!=MYSQL, mysql is not used 
+
+Create table for lists
+
+```sql  
+CREATE TABLE `dlists` (
+`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+`userKey` varchar(1024) NOT NULL,
+`nodeKey` varchar(36) NOT NULL,
+`name` varchar(1024) NOT NULL,
+`nodeType` int(10) unsigned NOT NULL DEFAULT '0',
+`data` longtext,
+PRIMARY KEY (`id`),
+UNIQUE KEY `dlists_UN` (`nodeKey`)
+)
+```  
