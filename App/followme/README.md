@@ -1,6 +1,7 @@
 # App
 
-To run dev server go to directory and run npm:  
+To run dev server go to directory and run npm:
+
 cd FollowMe/App/followme  
 npm run dev
 
