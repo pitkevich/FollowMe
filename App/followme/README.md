@@ -1,5 +1,9 @@
 # App
 
+To run dev server go to directory and run npm:  
+cd FollowMe/App/followme  
+npm run dev
+
 ### To test API:
 
 [user](http://localhost:3000/api/users/1)  
