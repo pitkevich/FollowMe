@@ -36,7 +36,9 @@ export async function insert<T extends ITData>(
     try {
         const rows = await connection.query(q, value);
         const okPacket: { affectedRows: number, insertId: number, warningStatus: number } = rows[0];
-        if (!okPacket || okPacket.affectedRows != 1 || rows.length != 2) throw Error('Unknown')
+        if (!okPacket || okPacket.affectedRows != 1 || rows.length != 2) {
+            return {success: false, message: 'unknown', data: []};
+        }
         const result = rows[1].map((row: T) => restoreDataField(row));
         return {success: true, message: undefined, data: result};
     } catch (err) {
