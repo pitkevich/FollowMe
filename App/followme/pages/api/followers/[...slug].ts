@@ -62,17 +62,24 @@ export default async function handler(
             break;
         case 'POST':
             const dataPost: Data = body;
-            if (dataPost === undefined || !dataPost.nodeKey || !dataPost.followerKey){
-                res.status(405).end(`Method ${method} Not Allowed with empty followers item.`)
+            if (!dataPost?.followerKey){
+                res.status(405).end(`Method ${method} Not Allowed with empty follower.`)
             }
             dataPost.userKey = id;
 
             if (process.env.STORAGE === 'MYSQL') {
-                const inserted = await insert<Data>(
+                const inserted = dataPost.nodeKey ?
+                    await insert<Data>(
                     `INSERT INTO store.dfollowers (userKey, nodeKey, followerKey) VALUES(?, ?, ?);
                         SELECT userKey, nodeKey, followerKey FROM store.dfollowers WHERE userKey=? AND nodeKey=?;`,
                     [dataPost.userKey, dataPost.nodeKey, dataPost.followerKey, dataPost.userKey, dataPost.nodeKey]
-                );
+                    ) :
+                    await insert<Data>(
+                        `INSERT INTO store.dfollowers (userKey, nodeKey, followerKey) 
+                            SELECT userKey, nodeKey, ? FROM store.dlists WHERE userKey=?;
+                            SELECT userKey, nodeKey, followerKey FROM store.dfollowers WHERE userKey=?;`,
+                        [dataPost.followerKey, dataPost.userKey, dataPost.userKey]
+                    );
                 if (!inserted.success) {
                     res.status(500).end(inserted.message ?? 'unknown error');
                 }
@@ -94,24 +101,21 @@ export default async function handler(
             break;
         case 'DELETE':
             if (process.env.STORAGE === 'MYSQL') {
-                if (!id || nodeKey === ''){
-                    res.status(405).end(`Method ${method} Not Allowed with empty nodeKey.`)
+                const followerKey = slug.length > 2 ? slug[2] : '';
+                if (!id || nodeKey === '' || followerKey === ''){
+                    res.status(405).end(`Method ${method} Not Allowed with empty follower and nodeKey.`)
                 }
 
-                let followerStr = '';
-                let values = [id, nodeKey];
-                if (slug.length > 2) {
-                    const followerKey = slug.length > 2 ? slug[2] : '';
-                    if (followerKey) {
-                        values = [...values, followerKey];
-                        followerStr = ' AND followerKey=?';
-                    }
-                }
+                const deleted = nodeKey === 'all' ?
+                    await remove<Data>(
+                        `DELETE FROM store.dfollowers WHERE userKey=? AND followerKey=?;`,
+                        [id, followerKey]
+                    ) :
+                    await remove<Data>(
+                        `DELETE FROM store.dfollowers WHERE userKey=? AND followerKey=? AND nodeKey=?;`,
+                        [id, followerKey, nodeKey]
+                    );
 
-                const deleted = await remove<Data>(
-                    `DELETE FROM store.dfollowers WHERE userKey=? AND nodeKey=?${followerStr};`,
-                    values
-                );
                 if (!deleted.success) {
                     res.status(500).end(deleted.message ?? 'unknown error');
                 }

@@ -36,7 +36,7 @@ export async function insert<T extends ITData>(
     try {
         const rows = await connection.query(q, value);
         const okPacket: { affectedRows: number, insertId: number, warningStatus: number } = rows[0];
-        if (!okPacket || okPacket.affectedRows != 1 || rows.length != 2) {
+        if (!okPacket || okPacket.affectedRows === 0 || rows.length != 2) {
             return {success: false, message: 'unknown', data: []};
         }
         const result = rows[1].map((row: T) => restoreDataField(row));
@@ -78,7 +78,7 @@ export async function remove<T extends ITData>(
     try {
         const okPacket: { affectedRows: number, insertId: number, warningStatus: number } =
             await connection.query(q, values);
-        if (okPacket?.affectedRows != 1) {
+        if (okPacket?.affectedRows === 0) {
             return {success: true, message: '404', data: []};
         }
         return {success: true, message: undefined, data: []};
