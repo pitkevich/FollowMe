@@ -46,17 +46,30 @@ MYSQL_PORT=3306
  
 if STORAGE!=MYSQL, mysql is not used 
 
-Create table for lists
+Create table for lists and followers  
+optional - DROP TABLE store.dlists;
 
 ```sql  
-CREATE TABLE `dlists` (
-`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-`userKey` varchar(1024) NOT NULL,
-`nodeKey` varchar(36) NOT NULL,
-`name` varchar(1024) NOT NULL,
-`nodeType` int(10) unsigned NOT NULL DEFAULT '0',
-`data` longtext,
-PRIMARY KEY (`id`),
-UNIQUE KEY `dlists_UN` (`nodeKey`)
-)
+DROP TABLE store.dlists;
+CREATE TABLE store.dlists ( 
+	id                   bigint UNSIGNED NOT NULL  AUTO_INCREMENT  PRIMARY KEY,
+	`userKey`            varchar(48)  NOT NULL    ,
+	`nodeKey`            varchar(36)  NOT NULL    ,
+	name                 varchar(1024)  NOT NULL    ,
+	`nodeType`           int UNSIGNED NOT NULL DEFAULT 0   ,
+	data                 longtext      ,
+	CONSTRAINT `dlists_UN` UNIQUE ( `nodeKey` ) 
+ );
+
+CREATE INDEX idx_dlists_user ON store.dlists ( `userKey` );
+
+
+CREATE TABLE store.dfollowers ( 
+	id                   bigint UNSIGNED NOT NULL  AUTO_INCREMENT  PRIMARY KEY,
+	`userKey`            varchar(48)  NOT NULL    ,
+	`nodeKey`            varchar(36)  NOT NULL    ,
+	`followerKey`        varchar(48)  NOT NULL    
+ );
+
+CREATE INDEX idx_dfollowers ON store.dfollowers ( `userKey`, `nodeKey` );
 ```  
