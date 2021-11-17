@@ -38,7 +38,7 @@ export default async function handler(
                     );
 
                 if (!result.success) {
-                    res.status(500).end(result.message ?? 'unknown error');
+                    res.status(500).end(result.message ?? 'Unknown error');
                 } else if (!result.data) {
                     res.status(404).end(`\'${slug}\' Not Found`)
                 } else {
