@@ -11,24 +11,28 @@ type Data = {
     data?: Data[]
 }
 
+type FData = {
+    userKey?: string,
+    nodeKey: string,
+    followerKey?: string,
+    data?: undefined
+}
+
+
 async function getList(nodeKey: Guid) {
     const str = nodeKey.toString();
     console.log(`getList ${str}`);
     await axios.get<Data[]>(`${host}lists/1/${str}`,
     )
         .then(function (response) {
-            console.log(response.status);
             if (response.status === 200 && response.data[0].nodeKey === str) {
-                console.log('success');
+                console.log(response.status, 'success');
             } else {
-                console.log('fail');
+                console.log(response.status, 'fail');
             }
         })
         .catch(function (error) {
-            console.log(error);
-        })
-        .then(function () {
-            // always executed
+            console.log('fail', error);
         });
 }
 
@@ -45,19 +49,14 @@ async function createList(nodeKey: Guid) {
     };
     await axios.post<Data[]>(`${host}lists/1`, postData)
         .then(function (response) {
-            console.log(response.status);
             if (response.status === 200 && response.data[0].nodeKey === postData.nodeKey) {
-                console.log('success');
+                console.log(response.status, 'success');
             } else {
-                console.log('fail');
+                console.log(response.status, 'fail');
             }
         })
         .catch(function (error) {
-            console.log(error);
-            console.log('fail');
-        })
-        .then(function () {
-            // always executed
+            console.log('fail', error);
         });
 }
 
@@ -74,19 +73,14 @@ async function updateList(nodeKey: Guid, isDataNull: boolean = false) {
     };
     await axios.put<Data[]>(`${host}lists/1/${nodeKey}`, postData)
         .then(function (response) {
-            console.log(response.status);
             if (response.status === 200 && response.data[0].nodeKey === str) {
-                console.log('success');
+                console.log(response.status, 'success');
             } else {
-                console.log('fail');
+                console.log(response.status, 'fail');
             }
         })
         .catch(function (error) {
-            console.log(error);
-            console.log('fail');
-        })
-        .then(function () {
-            // always executed
+            console.log('fail', error);
         });
 }
 
@@ -95,19 +89,84 @@ async function deleteList(nodeKey: Guid) {
     console.log(`deleteList ${str}`);
     await axios.delete<Data[]>(`${host}lists/1/${str}`)
         .then(function (response) {
-            console.log(response.status);
             if (response.status === 200 && response.data.length === 0) {
-                console.log('success');
+                console.log(response.status, 'success');
             } else {
-                console.log('fail');
+                console.log(response.status, 'fail');
             }
         })
         .catch(function (error) {
-            console.log(error);
-            console.log('fail');
+            console.log('fail', error);
+        });
+}
+
+
+
+async function getFollowers(nodeKey: Guid, followerKey: Guid | null = null) {
+    const str = nodeKey.toString();
+    const followerStr = followerKey ? '/' + followerKey.toString() : '';
+    console.log(`getFollowers ${str}`);
+    await axios.get<FData[]>(`${host}followers/1/${str}${followerStr}`,
+    )
+        .then(function (response) {
+            if (response.status === 200 && response.data[0].nodeKey === str) {
+                if (!followerKey) {
+                    console.log(response.status, 'success');
+                }
+                else {
+                    if (followerKey.toString() === response.data[0].followerKey) {
+                        console.log(response.status, 'success');
+                    }
+                    else {
+                        console.log(response.status, 'fail');
+                    }
+                }
+            } else {
+                console.log(response.status, 'fail');
+            }
         })
-        .then(function () {
-            // always executed
+        .catch(function (error) {
+            console.log('feil', error);
+        });
+}
+
+async function createFollowers(nodeKey: Guid, followerKey: Guid) {
+    const str = nodeKey.toString();
+    const followerStr = followerKey.toString();
+    console.log(`createFollower ${str}`);
+    const postData = {
+        nodeKey: str,
+        followerKey: followerStr
+    };
+    await axios.post<FData[]>(`${host}followers/1`, postData)
+        .then(function (response) {
+            if (response.status === 200 &&
+                response.data[0].nodeKey === postData.nodeKey &&
+                response.data[0].followerKey === postData.followerKey) {
+                console.log(response.status, 'success');
+            } else {
+                console.log(response.status, 'fail');
+            }
+        })
+        .catch(function (error) {
+            console.log('fail', error);
+        });
+}
+
+async function deleteFollowers(nodeKey: Guid, followerKey: Guid | null = null) {
+    const str = nodeKey.toString();
+    const followerStr = followerKey ? '/' + followerKey.toString() : '';
+    console.log(`deleteFollower ${str}`);
+    await axios.delete<FData[]>(`${host}followers/1/${str}${followerStr}`)
+        .then(function (response) {
+            if (response.status === 200 && response.data.length === 0) {
+                console.log(response.status, 'success');
+            } else {
+                console.log(response.status, 'fail');
+            }
+        })
+        .catch(function (error) {
+            console.log('fail', error);
         });
 }
 
@@ -135,4 +194,34 @@ axios.get<Data[]>(`${host}lists/1`)
             .catch(function (error) {
                 console.log(error);
             })
+            .finally(
+                function () {
+                    axios.get<FData[]>(`${host}followers/1`)
+                        .then(async function (response) {
+                            console.log('followers count before');
+                            console.log(response.data.length);
+                            const nodeId = Guid.create();
+                            const followerId = Guid.create();
+                            console.log(`create / update ${followerId}`);
+                            await createFollowers(nodeId, followerId);
+                            await getFollowers(nodeId);
+                            await getFollowers(nodeId, followerId);
+                            await deleteFollowers(nodeId, followerId);
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        })
+                        .then(async function () {
+                            await axios.get<FData[]>(`${host}followers/1`)
+                                .then(function (response) {
+                                    console.log('followers count after');
+                                    console.log(response.data.length);
+                                })
+                                .catch(function (error) {
+                                    console.log(error);
+                                })
+                        })
+                }
+            )
     });
+

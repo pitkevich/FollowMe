@@ -72,12 +72,12 @@ export async function update<T extends ITData>(
 
 export async function remove<T extends ITData>(
     q: string,
-    value: string | number
+    values: (string | number)[] | string | number = []
 ): Promise<IQueryResult<T>> {
     const connection = await createConnection();
     try {
         const okPacket: { affectedRows: number, insertId: number, warningStatus: number } =
-            await connection.query(q, value);
+            await connection.query(q, values);
         if (okPacket?.affectedRows != 1) {
             return {success: true, message: '404', data: []};
         }
